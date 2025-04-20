@@ -1,0 +1,8 @@
+platform :ios, '13.0' # or higher depending on your deployment target
+
+target 'WalkRoute' do
+  use_frameworks!
+
+  # Google Maps SDK
+  pod 'GoogleMaps'
+end
