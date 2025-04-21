@@ -7,27 +7,35 @@ class RouteGenerator {
         // Estimate total round-trip walking distance (in meters)
         let metersPerMinute: Double = 80
         let totalDistance = metersPerMinute * Double(durationInMinutes)
-        let halfDistance = totalDistance / 2
-        let earthRadius: Double = 6371000
 
-        // Calculate lat/lng deltas based on distance
-        let deltaLat = (halfDistance / earthRadius) * (180 / .pi)
-        let deltaLng = deltaLat / cos(start.latitude * .pi / 180)
+        func coordinate(from start: CLLocationCoordinate2D, distanceMeters: Double, bearingDegrees: Double) -> CLLocationCoordinate2D {
+            let bearingRadians = bearingDegrees * .pi / 180
+            let lat1 = start.latitude * .pi / 180
+            let lon1 = start.longitude * .pi / 180
+            let angularDistance = distanceMeters / 6371000
 
-        // Create two waypoints for a loop route
-        let waypoint1 = CLLocationCoordinate2D(
-            latitude: start.latitude + deltaLat,
-            longitude: start.longitude + deltaLng
-        )
+            let lat2 = asin(sin(lat1) * cos(angularDistance) +
+                            cos(lat1) * sin(angularDistance) * cos(bearingRadians))
+            let lon2 = lon1 + atan2(sin(bearingRadians) * sin(angularDistance) * cos(lat1),
+                                    cos(angularDistance) - sin(lat1) * sin(lat2))
 
-        let waypoint2 = CLLocationCoordinate2D(
-            latitude: start.latitude - deltaLat,
-            longitude: start.longitude - deltaLng
-        )
+            return CLLocationCoordinate2D(
+                latitude: lat2 * 180 / .pi,
+                longitude: lon2 * 180 / .pi
+            )
+        }
+
+        let distance = Double.random(in: 0.4...0.6) * totalDistance
+        let angle1 = Double.random(in: 0...180)
+        let angle2 = angle1 + Double.random(in: 100...160)
+
+        let waypoint1 = coordinate(from: start, distanceMeters: distance, bearingDegrees: angle1)
+        let waypoint2 = coordinate(from: start, distanceMeters: distance, bearingDegrees: angle2)
 
         let waypointStrings = [waypoint1, waypoint2].map { "\($0.latitude),\($0.longitude)" }.joined(separator: "|")
 
-        let urlString = "https://maps.googleapis.com/maps/api/directions/json?origin=\(start.latitude),\(start.longitude)&destination=\(start.latitude),\(start.longitude)&waypoints=\(waypointStrings)&key=\(Constants.googleMapsAPIKey)"
+        let urlString = "https://maps.googleapis.com/maps/api/directions/json?origin=\(start.latitude),\(start.longitude)&destination=\(start.latitude),\(start.longitude)&mode=walking&waypoints=\(waypointStrings)&key=\(Constants.googleMapsAPIKey)"
+
 
         guard let url = URL(string: urlString) else {
             completion(nil)
