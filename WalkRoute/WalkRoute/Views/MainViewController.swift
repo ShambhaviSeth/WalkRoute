@@ -5,6 +5,8 @@ struct MainViewController: View {
     @Environment(\.colorScheme) private var colorScheme
     @StateObject private var locationManager = LocationManager()
     @StateObject private var tracker = LiveLocationTracker()
+    @StateObject private var historyManager = WalkHistoryManager()
+    @State private var showingHistory = false
     @State private var route: Route?
     @State private var duration = Constants.defaultWalkDuration
     @State private var isLoading = false
@@ -14,6 +16,24 @@ struct MainViewController: View {
         ZStack(alignment: .bottom) {
             MapViewWithTracking(route: route, tracker: tracker, isDarkMode: colorScheme == .dark)
                 .ignoresSafeArea()
+
+            VStack {
+                HStack {
+                    Spacer()
+                    Button(action: {
+                        showingHistory = true
+                    }) {
+                        Image(systemName: "clock.arrow.circlepath")
+                            .padding(10)
+                            .background(Color.white.opacity(0.9))
+                            .clipShape(Circle())
+                            .shadow(radius: 2)
+                    }
+                    .padding(.top, 50)
+                    .padding(.trailing, 20)
+                }
+                Spacer()
+            }
 
             VStack(spacing: 8) {
                 Spacer()
@@ -84,7 +104,11 @@ struct MainViewController: View {
                 .padding()
             }
         }
+        .sheet(isPresented: $showingHistory) {
+            WalkHistoryView(historyManager: historyManager)
+        }
     }
+
 
     private func startRouteGeneration() {
         isLoading = true
@@ -95,8 +119,15 @@ struct MainViewController: View {
 
         RouteGenerator.generateRoute(from: location, durationInMinutes: duration) { newRoute in
             DispatchQueue.main.async {
-                self.route = newRoute
                 self.isLoading = false
+                if let newRoute = newRoute {
+                    self.route = newRoute
+                    historyManager.addWalk(
+                        distance: newRoute.distance,
+                        duration: newRoute.duration,
+                        startLocation: location
+                    )
+                }
             }
         }
     }
