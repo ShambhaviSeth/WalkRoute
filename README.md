@@ -59,5 +59,11 @@ open WalkRoute.xcworkspace
 
 
 ---
-## Screenshots
-![IMG_5612](https://github.com/user-attachments/assets/1ac62a27-4990-4b3a-87d0-51b421e2f5d6)
+## Features Preview
+
+| Light Theme | Dark Theme |
+| :---------: | :--------: |
+| <img src="https://github.com/user-attachments/assets/1ac62a27-4990-4b3a-87d0-51b421e2f5d6/IMG_5612.png" width="350" alt="Light-mode screenshot"/> | <img src="https://github.com/user-attachments/assets/16f6c60b-e1bc-48ef-98b6-4c97df3ec140/IMG_5613.png" width="350" alt="Dark-mode screenshot"/> |
+
+
+
